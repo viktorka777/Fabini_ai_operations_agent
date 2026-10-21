@@ -1,0 +1,39 @@
+{
+  "http_status": 502,
+  "result": {
+    "status": "failed",
+    "run_id": "1939",
+    "request": "Zjisti, proč objednávka 999999 nebyla expedována.",
+    "order_id": "999999",
+    "root_cause_code": "unknown",
+    "summary": "Objednávka 999999 nebyla nalezena. Zkontrolujte prosím číslo objednávky.",
+    "recommended_action": "none",
+    "next_steps": [],
+    "approval_required": false,
+    "pending_action": null,
+    "approval_endpoint": null,
+    "approval_example": null,
+    "actions_performed": [],
+    "steps": [
+      {
+        "tool": "get_order",
+        "arguments": {
+          "order_id": "999999"
+        },
+        "ok": false,
+        "result": "There was an error: \"Request failed with status code 404\"",
+        "decision": "Invoking \"get_order\" with {\"order_id\":\"999999\"}\n"
+      }
+    ],
+    "tool_calls": 1,
+    "tool_errors": [
+      {
+        "tool": "get_order",
+        "result": "There was an error: \"Request failed with status code 404\""
+      }
+    ],
+    "schema_errors": [],
+    "note": "Diagnostika nic nezměnila. Návrh akce není její provedení.",
+    "http_status": 502
+  }
+}

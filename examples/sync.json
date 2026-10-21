@@ -1,0 +1,118 @@
+{
+  "http_status": 200,
+  "result": {
+    "status": "approval_required",
+    "run_id": "1930",
+    "request": "Zjisti, proč objednávka 100245 nebyla expedována, a pokud je problém v synchronizaci, navrhni další postup.",
+    "order_id": "100245",
+    "root_cause_code": "sync_failure",
+    "summary": "Objednávka 100245 nebyla expedována, protože došlo k selhání přenosu z ERP do WMS. Platba proběhla v pořádku. Synchronizační logy ukazují chybu WMS_TIMEOUT.",
+    "recommended_action": "retry_sync",
+    "next_steps": [
+      "Byl připraven návrh na opakování synchronizace, který čeká na schválení."
+    ],
+    "approval_required": true,
+    "pending_action": {
+      "id": "VK-1930-retry_sync",
+      "action": "retry_sync",
+      "arguments": {
+        "order_id": "100245"
+      },
+      "expires_at": 1792012709652
+    },
+    "approval_endpoint": "/webhook/fabini-vk-approval",
+    "approval_example": {
+      "proposal_id": "VK-1930-retry_sync",
+      "decision": "approve"
+    },
+    "actions_performed": [],
+    "steps": [
+      {
+        "tool": "get_order",
+        "arguments": {
+          "order_id": "100245"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100245",
+          "status": "paid",
+          "total_czk": 1290,
+          "items": [
+            "Testovací pánev"
+          ]
+        },
+        "decision": "Invoking \"get_order\" with {\"order_id\":\"100245\"}\n"
+      },
+      {
+        "tool": "get_payment",
+        "arguments": {
+          "order_id": "100245"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100245",
+          "status": "paid"
+        },
+        "decision": "Invoking \"get_payment\" with {\"order_id\":\"100245\"}\n"
+      },
+      {
+        "tool": "get_fulfillment",
+        "arguments": {
+          "order_id": "100245"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100245",
+          "status": "not_received",
+          "shipped": false,
+          "blocked_reason": "Přenos ERP → WMS selhal"
+        },
+        "decision": "Invoking \"get_fulfillment\" with {\"order_id\":\"100245\"}\n"
+      },
+      {
+        "tool": "get_sync_logs",
+        "arguments": {
+          "order_id": "100245"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100245",
+          "entries": [
+            {
+              "status": "failed",
+              "error": "WMS_TIMEOUT",
+              "message": "WMS neodpovědělo včas"
+            }
+          ]
+        },
+        "decision": "Invoking \"get_sync_logs\" with {\"order_id\":\"100245\"}\n"
+      },
+      {
+        "tool": "retry_sync",
+        "arguments": {
+          "order_id": "100245"
+        },
+        "ok": true,
+        "result": {
+          "status": "approval_required",
+          "executed": false,
+          "proposal": {
+            "id": "VK-1930-retry_sync",
+            "action": "retry_sync",
+            "arguments": {
+              "order_id": "100245"
+            },
+            "expires_at": 1792012709652
+          },
+          "message": "Akce je pouze připravena. Provedení vyžaduje schválení člověkem."
+        },
+        "decision": "Invoking \"retry_sync\" with {\"order_id\":\"100245\"}\n"
+      }
+    ],
+    "tool_calls": 5,
+    "tool_errors": [],
+    "schema_errors": [],
+    "note": "Diagnostika nic nezměnila. Návrh akce není její provedení.",
+    "http_status": 200
+  }
+}

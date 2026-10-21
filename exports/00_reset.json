@@ -1,0 +1,373 @@
+{
+  "name": "FABINI · Viktoriia · 00 Admin demo reset",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fabini-vk-reset",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2fb69606-c4a4-4c84-a240-66c48ae6cd71",
+      "name": "Demo reset endpoint",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FABINI — internal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100245:retry_sync"
+      },
+      "id": "813a3210-7653-4f08-8e6a-e5d16c395f10",
+      "name": "Reset cooldown 100245 retry_sync",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100245:create_ticket"
+      },
+      "id": "fcac0206-fe30-44ab-9252-0196887ea151",
+      "name": "Reset cooldown 100245 create_ticket",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        464,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100246:retry_sync"
+      },
+      "id": "f638cf15-9c62-4c85-8f08-59d86bf00691",
+      "name": "Reset cooldown 100246 retry_sync",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        704,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100246:create_ticket"
+      },
+      "id": "c1817f69-f4c3-460a-a97d-3931887d519c",
+      "name": "Reset cooldown 100246 create_ticket",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        944,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100247:retry_sync"
+      },
+      "id": "ece77109-8fd9-47b0-bc61-1f747c609a21",
+      "name": "Reset cooldown 100247 retry_sync",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100247:create_ticket"
+      },
+      "id": "d1c9d274-62a5-46a7-8c15-327b20b809f3",
+      "name": "Reset cooldown 100247 create_ticket",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100248:retry_sync"
+      },
+      "id": "96ee7612-4375-48f8-a3d2-5889021b3176",
+      "name": "Reset cooldown 100248 retry_sync",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "fabini:vk:cooldown:100248:create_ticket"
+      },
+      "id": "f590263a-17a3-449f-8727-9e3494ca0dab",
+      "name": "Reset cooldown 100248 create_ticket",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5678/webhook/fabini-vk-mock",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({tool:\"reset_demo\"}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "8d3c290e-060d-4c50-8ec3-1bf164490018",
+      "name": "Reset own mock data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2160,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FABINI — internal"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r=$json;return [{json:{...(r.body||{status:'failed'}),http_status:r.statusCode||503}}];"
+      },
+      "id": "f5f71519-da82-49ea-92f9-b7aa608b8335",
+      "name": "Reset report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.payload || $json }}",
+        "options": {
+          "responseCode": "={{ $json.status && typeof $json.status === \"number\" ? $json.status : ($json.http_status || 200) }}"
+        }
+      },
+      "id": "fc27b7af-eaa1-43e9-9fec-5b324c51a71c",
+      "name": "Reset response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2640,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Demo reset endpoint": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100245 retry_sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100245 retry_sync": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100245 create_ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100245 create_ticket": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100246 retry_sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100246 retry_sync": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100246 create_ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100246 create_ticket": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100247 retry_sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100247 retry_sync": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100247 create_ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100247 create_ticket": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100248 retry_sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100248 retry_sync": {
+      "main": [
+        [
+          {
+            "node": "Reset cooldown 100248 create_ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset cooldown 100248 create_ticket": {
+      "main": [
+        [
+          {
+            "node": "Reset own mock data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset own mock data": {
+      "main": [
+        [
+          {
+            "node": "Reset report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset report": {
+      "main": [
+        [
+          {
+            "node": "Reset response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "executionTimeout": 120,
+    "binaryMode": "separate"
+  }
+}

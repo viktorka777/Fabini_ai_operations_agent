@@ -1,0 +1,94 @@
+[
+  {
+    "name": "sync",
+    "http_status": 200,
+    "status": "approval_required",
+    "passed": true
+  },
+  {
+    "name": "payment",
+    "http_status": 200,
+    "status": "completed",
+    "passed": true
+  },
+  {
+    "name": "error",
+    "http_status": 502,
+    "status": "failed",
+    "passed": true
+  },
+  {
+    "name": "no_auth",
+    "http_status": 403,
+    "status": null,
+    "passed": true
+  },
+  {
+    "name": "invalid_request",
+    "http_status": 422,
+    "status": "invalid_request",
+    "passed": true
+  },
+  {
+    "name": "multiple_orders",
+    "http_status": 422,
+    "status": "invalid_request",
+    "passed": true
+  },
+  {
+    "name": "invalid_approval",
+    "http_status": 422,
+    "status": "invalid_request",
+    "passed": true
+  },
+  {
+    "name": "unknown_proposal",
+    "http_status": 404,
+    "status": "blocked",
+    "passed": true
+  },
+  {
+    "name": "second_sync_proposal",
+    "http_status": 200,
+    "status": "approval_required",
+    "passed": true
+  },
+  {
+    "name": "approved_sync",
+    "http_status": 200,
+    "status": "completed",
+    "passed": true
+  },
+  {
+    "name": "replay_blocked",
+    "http_status": 409,
+    "status": "blocked",
+    "passed": true
+  },
+  {
+    "name": "stale_blocked",
+    "http_status": 409,
+    "status": "blocked",
+    "passed": true
+  },
+  {
+    "name": "wms_outage",
+    "http_status": 200,
+    "status": "approval_required",
+    "passed": true
+  },
+  {
+    "name": "approved_ticket",
+    "http_status": 200,
+    "status": "completed",
+    "passed": true
+  },
+  {
+    "name": "concurrent_action_cooldown",
+    "passed": true,
+    "outcomes": [
+      200,
+      429
+    ]
+  }
+]

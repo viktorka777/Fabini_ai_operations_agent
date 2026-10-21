@@ -1,0 +1,105 @@
+{
+  "http_status": 200,
+  "result": {
+    "status": "approval_required",
+    "run_id": "1959",
+    "request": "Nejprve ověř objednávku 100247. Zjisti proč nebyla expedována, ověř synchronizační logy a při výpadku připrav ke schválení incident pomocí create_ticket.",
+    "order_id": "100247",
+    "root_cause_code": "tool_error",
+    "summary": "Objednávka 100247 nebyla expedována, protože přenos ERP -> WMS selhal. Synchronizační logy nejsou dostupné kvůli chybě 503.",
+    "recommended_action": "create_ticket",
+    "next_steps": [
+      "Byl připraven návrh na vytvoření ticketu pro prověření stavu WMS a zajištění manuální synchronizace nebo opravy automatické synchronizace."
+    ],
+    "approval_required": true,
+    "pending_action": {
+      "id": "VK-1959-create_ticket",
+      "action": "create_ticket",
+      "arguments": {
+        "order_id": "100247",
+        "description": "Objednávka 100247 nebyla expedována, protože přenos ERP -> WMS selhal. Synchronizační logy nejsou dostupné kvůli chybě 503. Je potřeba prověřit stav WMS a zajistit manuální synchronizaci nebo opravu automatické synchronizace."
+      },
+      "expires_at": 1792012752188
+    },
+    "approval_endpoint": "/webhook/fabini-vk-approval",
+    "approval_example": {
+      "proposal_id": "VK-1959-create_ticket",
+      "decision": "approve"
+    },
+    "actions_performed": [],
+    "steps": [
+      {
+        "tool": "get_order",
+        "arguments": {
+          "order_id": "100247"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100247",
+          "status": "paid",
+          "total_czk": 1290,
+          "items": [
+            "Testovací pánev"
+          ]
+        },
+        "decision": "Invoking \"get_order\" with {\"order_id\":\"100247\"}\n"
+      },
+      {
+        "tool": "get_fulfillment",
+        "arguments": {
+          "order_id": "100247"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100247",
+          "status": "not_received",
+          "shipped": false,
+          "blocked_reason": "Přenos ERP → WMS selhal"
+        },
+        "decision": "Invoking \"get_fulfillment\" with {\"order_id\":\"100247\"}\n"
+      },
+      {
+        "tool": "get_sync_logs",
+        "arguments": {
+          "order_id": "100247"
+        },
+        "ok": false,
+        "result": "There was an error: \"Request failed with status code 503\"",
+        "decision": "Invoking \"get_sync_logs\" with {\"order_id\":\"100247\"}\n"
+      },
+      {
+        "tool": "create_ticket",
+        "arguments": {
+          "description": "Objednávka 100247 nebyla expedována, protože přenos ERP -> WMS selhal. Synchronizační logy nejsou dostupné kvůli chybě 503. Je potřeba prověřit stav WMS a zajistit manuální synchronizaci nebo opravu automatické synchronizace.",
+          "order_id": "100247"
+        },
+        "ok": true,
+        "result": {
+          "status": "approval_required",
+          "executed": false,
+          "proposal": {
+            "id": "VK-1959-create_ticket",
+            "action": "create_ticket",
+            "arguments": {
+              "order_id": "100247",
+              "description": "Objednávka 100247 nebyla expedována, protože přenos ERP -> WMS selhal. Synchronizační logy nejsou dostupné kvůli chybě 503. Je potřeba prověřit stav WMS a zajistit manuální synchronizaci nebo opravu automatické synchronizace."
+            },
+            "expires_at": 1792012752188
+          },
+          "message": "Akce je pouze připravena. Provedení vyžaduje schválení člověkem."
+        },
+        "decision": "Invoking \"create_ticket\" with {\"description\":\"Objednávka 100247 nebyla expedována, protože přenos ERP -> WMS selhal. Synchronizační logy nejsou dostupné kvůli chybě 503. Je potřeba prověřit stav WMS a zajistit manuální synchronizaci nebo opravu automatické synchronizace.\",\"order_id\":\"100247\"}\n"
+      }
+    ],
+    "tool_calls": 4,
+    "tool_errors": [
+      {
+        "tool": "get_sync_logs",
+        "result": "There was an error: \"Request failed with status code 503\""
+      }
+    ],
+    "schema_errors": [],
+    "note": "Diagnostika nic nezměnila. Návrh akce není její provedení.",
+    "http_status": 200
+  }
+}

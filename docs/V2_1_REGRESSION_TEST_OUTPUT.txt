@@ -1,0 +1,34 @@
+$ node test_regressions.js
+PASS retry_sync recommendation without proposal fails closed
+PASS create_ticket recommendation without proposal fails closed
+PASS report/action mismatch fails closed
+PASS matching report remains usable
+PASS nested proposal/order mismatch fails closed
+PASS success-only log blocks retry proposal
+PASS old failure superseded by success blocks retry proposal
+PASS empty log blocks retry proposal
+PASS unknown log blocks retry proposal
+PASS current failure permits proposal
+PASS change after log read blocks proposal
+PASS change before execution blocks mutation
+PASS Check approval lock rejects error with truthy metadata
+PASS Check approval lock rejects missing exact key
+PASS Check approval lock rejects boolean value
+PASS Check approval lock rejects numeric string
+PASS Check approval lock rejects error alongside valid number
+PASS Check approval lock rejects null error field
+PASS Check approval lock rejects zero value
+PASS Check approval lock rejects negative
+PASS Check approval lock accepts native keyed integer
+PASS Check approval lock blocks native duplicate
+PASS Check cooldown rejects error with truthy metadata
+PASS Check cooldown rejects missing exact key
+PASS Check cooldown rejects boolean value
+PASS Check cooldown rejects numeric string
+PASS Check cooldown rejects error alongside valid number
+PASS Check cooldown rejects null error field
+PASS Check cooldown rejects zero value
+PASS Check cooldown rejects negative
+PASS Check cooldown accepts native keyed integer
+PASS Check cooldown blocks native duplicate
+{"tests":32,"passed":32,"failed":0}

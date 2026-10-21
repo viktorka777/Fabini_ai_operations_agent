@@ -1,0 +1,35 @@
+{
+  "http_status": 200,
+  "result": {
+    "status": "completed",
+    "proposal_id": "VK-1959-create_ticket",
+    "order_id": "100247",
+    "action": "create_ticket",
+    "action_result": {
+      "ticket_id": "INC-VK-1959-create_ticket",
+      "order_id": "100247",
+      "description": "Objednávka 100247 nebyla expedována, protože přenos ERP -> WMS selhal. Synchronizační logy nejsou dostupné kvůli chybě 503. Je potřeba prověřit stav WMS a zajistit manuální synchronizaci nebo opravu automatické synchronizace.",
+      "status": "open"
+    },
+    "verification": {
+      "tool": "get_tickets",
+      "verified": true,
+      "result": [
+        {
+          "ticket_id": "INC-VK-1959-create_ticket",
+          "order_id": "100247",
+          "description": "Objednávka 100247 nebyla expedována, protože přenos ERP -> WMS selhal. Synchronizační logy nejsou dostupné kvůli chybě 503. Je potřeba prověřit stav WMS a zajistit manuální synchronizaci nebo opravu automatické synchronizace.",
+          "status": "open"
+        }
+      ]
+    },
+    "actions_performed": [
+      {
+        "tool": "create_ticket",
+        "ok": true
+      }
+    ],
+    "message": "Incident byl vytvořen a ověřen.",
+    "http_status": 200
+  }
+}

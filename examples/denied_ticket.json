@@ -1,0 +1,10 @@
+{
+  "http_status": 200,
+  "result": {
+    "status": "denied",
+    "proposal_id": "VK-1785-create_ticket",
+    "actions_performed": [],
+    "message": "Žádná změna nebyla provedena.",
+    "http_status": 200
+  }
+}

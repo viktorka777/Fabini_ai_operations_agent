@@ -1,0 +1,690 @@
+{
+  "name": "FABINI · Viktoriia · 03 Approval and execution",
+  "nodes": [
+    {
+      "id": "cae4daf8-5dd3-44a6-b4db-276ff3a2a22c",
+      "name": "Approval endpoint",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fabini-vk-approval",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FABINI — operator"
+        }
+      }
+    },
+    {
+      "id": "6f3e48ab-8671-4562-b03b-5c22266a0afe",
+      "name": "Validate approval",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const b=$input.first().json.body||{};const ok=typeof b.proposal_id==='string'&&/^VK-[0-9]+-(retry_sync|create_ticket)$/.test(b.proposal_id)&&['approve','deny'].includes(b.decision);\nreturn [{json:{valid:ok,proposal_id:ok?b.proposal_id:null,decision:b.decision,http_status:ok?200:422,status:ok?'ready':'invalid_request',message:ok?'':'proposal_id a rozhodnutí approve/deny jsou povinné'}}];"
+      }
+    },
+    {
+      "id": "90b7d09e-1b9c-49c0-a61a-07d5fc401456",
+      "name": "Valid approval?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "e0fb2903-e194-43be-9af5-25c357e5555b",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "9c794847-d4f6-42fb-8382-dcea88436813",
+      "name": "Read bound proposal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        700,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5678/webhook/fabini-vk-mock",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({tool:\"inspect_proposal\",proposal_id:$json.proposal_id,decision:$json.decision}) }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FABINI — internal"
+        }
+      }
+    },
+    {
+      "id": "3a3317b5-0f98-4559-aef3-0b7da9f464a0",
+      "name": "Validate proposal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const r=$input.first().json;const b=r.body||{};const req=$('Validate approval').first().json;\nreturn [{json:{...req,...b,valid:r.statusCode===200&&b.status==='valid',http_status:r.statusCode||503,status:r.statusCode===200?'valid':'blocked',error:b.error||r.error||null}}];"
+      }
+    },
+    {
+      "id": "5de5409a-8f13-4f87-8d1d-b6730011e86f",
+      "name": "Proposal valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1180,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "d03073ff-00a5-4bc3-b4e3-b85f159a6a6a",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4c3dc26c-a2ca-4d18-a735-d10032e2236c",
+      "name": "Claim approval",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        0
+      ],
+      "parameters": {
+        "operation": "incr",
+        "key": "=fabini:vk:claim:{{ $json.proposal_id }}",
+        "expire": true,
+        "ttl": 3600
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "id": "2abc694d-fc14-45f4-a51e-ba7900b1c1b6",
+      "name": "Check approval lock",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1660,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const p=$('Validate proposal').first().json;\nconst raw=$input.first().json;\nconst key=typeof p.proposal_id==='string'?'fabini:vk:claim:'+p.proposal_id:null;\nconst reliable=key&&raw&&typeof raw==='object'&&!Array.isArray(raw)\n &&Object.keys(raw).length===1&&!Object.prototype.hasOwnProperty.call(raw,'error')\n &&Object.prototype.hasOwnProperty.call(raw,key)&&typeof raw[key]==='number'\n &&Number.isSafeInteger(raw[key])&&raw[key]>=1;\nconst n=reliable?raw[key]:null;\nreturn [{json:{...p,lock_ok:n===1,http_status:n===1?200:n>1?409:503,\n status:n===1?'locked':'blocked',error:n===1?null:n>1?'approval_already_used':'lock_store_unavailable'}}];\n"
+      }
+    },
+    {
+      "id": "33ad20cd-520d-4f5e-b266-987459a6ca1c",
+      "name": "Lock acquired?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1900,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c8d16615-2d19-45eb-a7b0-38d75dfb9db4",
+              "leftValue": "={{ $json.lock_ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c5a5e4df-9102-45bc-804e-c2cbb746b77b",
+      "name": "Is approval?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2140,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{json:{...$json,approved:$json.decision==='approve'}}];"
+      }
+    },
+    {
+      "id": "ee3070c9-426d-4cd2-a4aa-52ae52087873",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2380,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "df1a311f-1aba-4541-93b1-b7a0197bef9c",
+              "leftValue": "={{ $json.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "7c64a3ca-1e29-4779-a5bd-32058493abe6",
+      "name": "Action cooldown",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2620,
+        0
+      ],
+      "parameters": {
+        "operation": "incr",
+        "key": "=fabini:vk:cooldown:{{ $json.proposal.order_id }}:{{ $json.proposal.action }}",
+        "expire": true,
+        "ttl": 600
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "redis": {
+          "name": "FABINI — Redis (demo locks)"
+        }
+      }
+    },
+    {
+      "id": "2199c6b3-9a95-4061-89b4-7e9063ed5ddb",
+      "name": "Check cooldown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const p=$('Check approval lock').first().json;\nconst raw=$input.first().json;\nconst proposal=p.proposal;\nconst key=proposal&&typeof proposal.order_id==='string'&&['retry_sync','create_ticket'].includes(proposal.action)\n ?'fabini:vk:cooldown:'+proposal.order_id+':'+proposal.action:null;\nconst reliable=key&&raw&&typeof raw==='object'&&!Array.isArray(raw)\n &&Object.keys(raw).length===1&&!Object.prototype.hasOwnProperty.call(raw,'error')\n &&Object.prototype.hasOwnProperty.call(raw,key)&&typeof raw[key]==='number'\n &&Number.isSafeInteger(raw[key])&&raw[key]>=1;\nconst n=reliable?raw[key]:null;\nreturn [{json:{...p,window_ok:n===1,http_status:n===1?200:n>1?429:503,\n status:n===1?'locked':'blocked',error:n===1?null:n>1?'action_limit_reached':'lock_store_unavailable'}}];\n"
+      }
+    },
+    {
+      "id": "6ea2ac33-68d7-475c-a41a-eb5e15e6c8a6",
+      "name": "Within limit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3100,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "40da5624-5aee-42a1-8b44-dd246d0cf96b",
+              "leftValue": "={{ $json.window_ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "310a7e6e-4d65-45e9-9b51-79243bb806b2",
+      "name": "Execute and verify approved action",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3360,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5678/webhook/fabini-vk-mock",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({tool:\"execute_approved\",proposal_id:$json.proposal_id,decision:$json.decision,lock_granted:true}) }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FABINI — internal"
+        }
+      }
+    },
+    {
+      "id": "3daa0d08-f996-44f3-b855-d4feeca085f6",
+      "name": "Action report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const r=$input.first().json;return [{json:{...(r.body||{status:'failed',error:r.error||'mock_unavailable'}),http_status:r.statusCode||503}}];"
+      }
+    },
+    {
+      "id": "9902a5f3-d9fb-40a6-bca8-1078b2e7a40c",
+      "name": "Approval result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3840,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.payload || $json }}",
+        "options": {
+          "responseCode": "={{ $json.status && typeof $json.status === \"number\" ? $json.status : ($json.http_status || 200) }}"
+        }
+      }
+    },
+    {
+      "id": "2745049a-f5f8-484c-a432-16cb9b4b0fd5",
+      "name": "Record denial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2620,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5678/webhook/fabini-vk-mock",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({tool:\"execute_approved\",proposal_id:$json.proposal_id,decision:$json.decision,lock_granted:true}) }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FABINI — internal"
+        }
+      }
+    },
+    {
+      "id": "e22d0dd4-016b-45ba-affa-d5b07fbf678a",
+      "name": "Architecture note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -280
+      ],
+      "parameters": {
+        "content": "Oddělené schválení konkrétního návrhu. Header auth + Redis INCR: jeden spotřebitel návrhu, jedna změna objednávky/akce za 10 minut. Po změně je ověřen stav.",
+        "height": 200,
+        "width": 550
+      }
+    }
+  ],
+  "connections": {
+    "Approval endpoint": {
+      "main": [
+        [
+          {
+            "node": "Validate approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate approval": {
+      "main": [
+        [
+          {
+            "node": "Valid approval?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid approval?": {
+      "main": [
+        [
+          {
+            "node": "Read bound proposal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approval result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read bound proposal": {
+      "main": [
+        [
+          {
+            "node": "Validate proposal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate proposal": {
+      "main": [
+        [
+          {
+            "node": "Proposal valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proposal valid?": {
+      "main": [
+        [
+          {
+            "node": "Claim approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approval result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim approval": {
+      "main": [
+        [
+          {
+            "node": "Check approval lock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check approval lock": {
+      "main": [
+        [
+          {
+            "node": "Lock acquired?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lock acquired?": {
+      "main": [
+        [
+          {
+            "node": "Is approval?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approval result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is approval?": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Action cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record denial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action cooldown": {
+      "main": [
+        [
+          {
+            "node": "Check cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check cooldown": {
+      "main": [
+        [
+          {
+            "node": "Within limit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Within limit?": {
+      "main": [
+        [
+          {
+            "node": "Execute and verify approved action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approval result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute and verify approved action": {
+      "main": [
+        [
+          {
+            "node": "Action report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action report": {
+      "main": [
+        [
+          {
+            "node": "Approval result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record denial": {
+      "main": [
+        [
+          {
+            "node": "Action report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "executionTimeout": 120,
+    "binaryMode": "separate"
+  }
+}

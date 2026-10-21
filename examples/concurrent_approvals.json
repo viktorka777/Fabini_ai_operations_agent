@@ -1,0 +1,61 @@
+[
+  {
+    "http_status": 200,
+    "result": {
+      "status": "completed",
+      "proposal_id": "VK-1792010953437554454-create_ticket",
+      "order_id": "100248",
+      "action": "create_ticket",
+      "action_result": {
+        "ticket_id": "INC-VK-1792010953437554454-create_ticket",
+        "order_id": "100248",
+        "description": "Konkurentní test skladu.",
+        "status": "open"
+      },
+      "verification": {
+        "tool": "get_tickets",
+        "verified": true,
+        "result": [
+          {
+            "ticket_id": "INC-VK-1792010953437554454-create_ticket",
+            "order_id": "100248",
+            "description": "Konkurentní test skladu.",
+            "status": "open"
+          }
+        ]
+      },
+      "actions_performed": [
+        {
+          "tool": "create_ticket",
+          "ok": true
+        }
+      ],
+      "message": "Incident byl vytvořen a ověřen.",
+      "http_status": 200
+    }
+  },
+  {
+    "http_status": 429,
+    "result": {
+      "valid": true,
+      "proposal_id": "VK-1792010953555843545-create_ticket",
+      "decision": "approve",
+      "http_status": 429,
+      "status": "blocked",
+      "message": "",
+      "proposal": {
+        "id": "VK-1792010953555843545-create_ticket",
+        "order_id": "100248",
+        "action": "create_ticket",
+        "arguments": {
+          "order_id": "100248",
+          "description": "Konkurentní test skladu."
+        },
+        "expires_at": 1792012753687
+      },
+      "error": "action_limit_reached",
+      "lock_ok": true,
+      "window_ok": false
+    }
+  }
+]

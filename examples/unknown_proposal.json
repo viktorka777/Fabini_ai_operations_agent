@@ -1,0 +1,12 @@
+{
+  "http_status": 404,
+  "result": {
+    "valid": false,
+    "proposal_id": "VK-999999-retry_sync",
+    "decision": "approve",
+    "http_status": 404,
+    "status": "blocked",
+    "message": "",
+    "error": "proposal_not_found"
+  }
+}

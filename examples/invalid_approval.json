@@ -1,0 +1,11 @@
+{
+  "http_status": 422,
+  "result": {
+    "valid": false,
+    "proposal_id": null,
+    "decision": "yes",
+    "http_status": 422,
+    "status": "invalid_request",
+    "message": "proposal_id a rozhodnutí approve/deny jsou povinné"
+  }
+}

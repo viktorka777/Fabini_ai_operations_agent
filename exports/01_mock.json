@@ -1,0 +1,103 @@
+{
+  "name": "FABINI · Viktoriia · 01 Mock systems",
+  "nodes": [
+    {
+      "id": "788c5e95-c61e-4aaa-9413-694cf963c82f",
+      "name": "Mock endpoint",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fabini-vk-mock",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FABINI — internal"
+        }
+      }
+    },
+    {
+      "id": "b42e5ab9-4a09-4688-a305-6dbacecd0025",
+      "name": "Mock state and guarded tools",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const b=$input.first().json.body||{};\nconst st=$getWorkflowStaticData('global');\nif(b.tool==='reset_demo')for(const k of Object.keys(st))delete st[k];\nif(!st.orders){\n st.orders={};\n for(const id of ['100245','100246','100247','100248']){\n  const paid=id!=='100246';\n  st.orders[id]={\n   order:{order_id:id,status:paid?'paid':'pending_payment',total_czk:1290,items:['Testovací pánev']},\n   payment:{order_id:id,status:paid?'paid':'pending'},\n   fulfillment:{order_id:id,status:id==='100246'?'awaiting_payment':id==='100248'?'stock_hold':'not_received',shipped:false,blocked_reason:id==='100246'?'Platba nebyla dokončena':id==='100248'?'Nedostatek zásoby':'Přenos ERP → WMS selhal'},\n   sync_logs:{order_id:id,entries:id==='100246'?[]:[{status:id==='100248'?'success':'failed',error:id==='100248'?null:'WMS_TIMEOUT',message:id==='100248'?'Přenos dokončen':'WMS neodpovědělo včas'}]},version:1\n  };\n }\n}\nst.proposals=st.proposals||{};st.runs=st.runs||{};st.tickets=st.tickets||[];st.audit=st.audit||[];\nconst now=Date.now(),tool=String(b.tool||''),id=String(b.order_id||'');\nconst audit=(event,data)=>{st.audit.push({at:new Date().toISOString(),event,...data});st.audit=st.audit.slice(-1000);};\nconst out=(status,payload)=>{\n const run=st.runs[String(b.run_id||'')];\n if(run&&status===200&&['get_order','get_payment','get_fulfillment','get_sync_logs'].includes(tool)){\n  run.verified=run.verified||{};run.verified[tool]=true;\n  run.observations=run.observations||{};run.observations[tool]=JSON.parse(JSON.stringify(payload));\n }\n if(tool!=='get_audit')audit('tool_result',{tool,order_id:id,run_id:String(b.run_id||''),status,result:payload});\n return [{json:{status,payload}}];\n};\naudit('tool_call',{tool,order_id:id,run_id:String(b.run_id||''),decision:b.decision||null});\nfor(const [key,r] of Object.entries(st.runs))if(now-r.at>3600000)delete st.runs[key];\nfor(const [key,p] of Object.entries(st.proposals))if(now-p.created_at>86400000)delete st.proposals[key];\nconst actions=['retry_sync','create_ticket'];\nconst publicTools=['get_order','get_payment','get_fulfillment','get_sync_logs',...actions];\nconst confirmedSyncFailure=(logs)=>{\n if(!logs||!Array.isArray(logs.entries)||!logs.entries.length)return false;\n const latest=logs.entries[0];\n return !!latest&&latest.status==='failed'&&typeof latest.error==='string'&&latest.error.trim().length>0;\n};\nif(tool==='reset_demo')return out(200,{status:'reset',message:'Pouze vlastní testovací data byla obnovena.'});\nif(tool==='inspect_proposal'||tool==='execute_approved'){\n const p=st.proposals[String(b.proposal_id||'')];\n if(!p)return out(404,{status:'blocked',error:'proposal_not_found'});\n if(!['approve','deny'].includes(b.decision))return out(422,{status:'blocked',error:'invalid_decision'});\n if(p.state!=='pending')return out(409,{status:'blocked',error:'proposal_already_consumed',state:p.state});\n if(p.expires_at<=now)return out(410,{status:'blocked',error:'approval_expired'});\n const rec=st.orders[p.order_id];\n if(b.decision==='approve'&&rec.version!==p.version)return out(409,{status:'blocked',error:'state_changed_since_analysis'});\n if(b.decision==='approve'&&p.action==='retry_sync'&&(p.sync_failure_confirmed!==true||!confirmedSyncFailure(rec.sync_logs)))return out(409,{status:'blocked',error:'sync_failure_not_confirmed'});\n if(tool==='inspect_proposal')return out(200,{status:'valid',proposal:{id:p.id,order_id:p.order_id,action:p.action,arguments:p.arguments,expires_at:p.expires_at},decision:b.decision});\n if(b.lock_granted!==true)return out(403,{status:'blocked',error:'approval_lock_required'});\n if(b.decision==='deny'){\n  p.state='denied';audit('approval_denied',{proposal_id:p.id});\n  return out(200,{status:'denied',proposal_id:p.id,actions_performed:[],message:'Žádná změna nebyla provedena.'});\n }\n p.state='executing';audit('approval_granted',{proposal_id:p.id,action:p.action,arguments:p.arguments});\n let result;\n if(p.action==='retry_sync'){\n  if(p.order_id==='100247'){\n   p.state='failed';return out(503,{status:'failed',error:'wms_unavailable',proposal_id:p.id,actions_performed:[{tool:'retry_sync',ok:false}],message:'WMS je nedostupné. Automatické opakování se neprovádí.'});\n  }\n  if(rec.payment.status!=='paid'||rec.fulfillment.status!=='not_received'){\n   p.state='blocked';return out(409,{status:'blocked',error:'retry_not_applicable'});\n  }\n  rec.fulfillment={...rec.fulfillment,status:'ready_to_ship',blocked_reason:null,shipped:false};\n  rec.sync_logs.entries.unshift({status:'success',error:null,message:'Objednávka přijata ve WMS',at:new Date().toISOString()});\n  rec.version++;\n  result={status:'synchronized',idempotency_key:p.order_id,shipped:false};\n }else{\n  const t={ticket_id:'INC-'+p.id,order_id:p.order_id,description:p.arguments.description,status:'open'};\n  st.tickets.push(t);result=t;\n }\n audit('action_executed',{tool:p.action,proposal_id:p.id,result});\n const verification=p.action==='retry_sync'\n  ?{tool:'get_fulfillment',verified:rec.fulfillment.status==='ready_to_ship',result:JSON.parse(JSON.stringify(rec.fulfillment))}\n  :{tool:'get_tickets',verified:st.tickets.some(t=>t.ticket_id===result.ticket_id),result:st.tickets.filter(t=>t.ticket_id===result.ticket_id)};\n audit('verification',{proposal_id:p.id,...verification});\n p.state='completed';\n return out(200,{status:verification.verified?'completed':'unverified',proposal_id:p.id,order_id:p.order_id,action:p.action,action_result:result,verification,actions_performed:[{tool:p.action,ok:true}],message:p.action==='retry_sync'?'Synchronizace ověřena. Objednávka je připravena k expedici, nikoli již odeslána.':'Incident byl vytvořen a ověřen.'});\n}\nif(tool==='get_audit')return out(200,{events:st.audit.filter(e=>!b.run_id||e.run_id===b.run_id),tickets:st.tickets});\nif(!publicTools.includes(tool))return out(400,{error:'unknown_tool'});\nconst run=String(b.run_id||'');\nif(!run||run.length>100)return out(422,{error:'invalid_run_id'});\nconst r=st.runs[run]||(st.runs[run]={at:now,calls:0,seen:{},verified:{},order_id:id});\nif((b.expected_order_id&&String(b.expected_order_id)!==id)||(r.order_id&&r.order_id!==id))return out(403,{error:'order_scope_mismatch'});\nr.order_id=id;r.verified=r.verified||{};\nr.calls++;\nif(r.calls>10)return out(429,{error:'tool_budget_exceeded'});\nconst key=tool+'|'+id;\nif(r.seen[key])return out(409,{error:'duplicate_tool_call',tool});\nr.seen[key]=true;\nif(!/^\\d{1,12}$/.test(id))return out(422,{error:'invalid_order_id'});\nconst rec=st.orders[id];\nif(!rec)return out(404,{error:'order_not_found',order_id:id});\nif(tool==='get_sync_logs'&&id==='100247')return out(503,{error:'wms_unavailable',message:'Simulovaný výpadek WMS'});\nif(actions.includes(tool)){\n if(!r.verified.get_order)return out(409,{error:'order_not_verified',message:'Nejprve ověř objednávku přes get_order. Návrh nebyl uložen.'});\n if(tool==='retry_sync'&&(!r.verified.get_payment||!r.verified.get_fulfillment||!r.verified.get_sync_logs))return out(409,{error:'sync_cause_not_verified',message:'Před návrhem retry ověř platbu, sklad a logy.'});\n if(tool==='retry_sync'&&(rec.payment.status!=='paid'||rec.fulfillment.status!=='not_received'))return out(409,{error:'retry_not_applicable'});\n if(tool==='retry_sync'&&(!confirmedSyncFailure(r.observations?.get_sync_logs)||!confirmedSyncFailure(rec.sync_logs)))return out(409,{error:'sync_failure_not_confirmed',message:'Poslední přečtený i aktuální záznam synchronizace musí potvrzovat chybu.'});\n const description=String(b.description||'').trim();\n if(tool==='create_ticket'&&(!description||description.length>2000))return out(422,{error:'invalid_description'});\n const proposal={id:'VK-'+run+'-'+tool,order_id:id,action:tool,arguments:tool==='retry_sync'?{order_id:id}:{order_id:id,description},version:rec.version,sync_failure_confirmed:tool==='retry_sync',created_at:now,expires_at:now+1800000,state:'pending'};\n st.proposals[proposal.id]=proposal;\n audit('approval_requested',{run_id:run,proposal_id:proposal.id,action:tool,arguments:proposal.arguments});\n return out(200,{status:'approval_required',executed:false,proposal:{id:proposal.id,action:tool,arguments:proposal.arguments,expires_at:proposal.expires_at},message:'Akce je pouze připravena. Provedení vyžaduje schválení člověkem.'});\n}\nreturn out(200,JSON.parse(JSON.stringify({get_order:rec.order,get_payment:rec.payment,get_fulfillment:rec.fulfillment,get_sync_logs:rec.sync_logs}[tool])));\n"
+      }
+    },
+    {
+      "id": "95f364a8-9771-4dca-b5a2-9fb2a7bd3fa9",
+      "name": "Mock response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.payload || $json }}",
+        "options": {
+          "responseCode": "={{ $json.status && typeof $json.status === \"number\" ? $json.status : ($json.http_status || 200) }}"
+        }
+      }
+    },
+    {
+      "id": "8313b0cb-5941-49a2-9f53-8f258551e6ed",
+      "name": "Architecture note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -280
+      ],
+      "parameters": {
+        "content": "SIMULOVANÉ systémy. Čtyři testovací objednávky. Žádné skutečné platby ani zásilky. Static data je demo úložiště; produkce potřebuje transakční DB.",
+        "height": 200,
+        "width": 550
+      }
+    }
+  ],
+  "connections": {
+    "Mock endpoint": {
+      "main": [
+        [
+          {
+            "node": "Mock state and guarded tools",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock state and guarded tools": {
+      "main": [
+        [
+          {
+            "node": "Mock response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "executionTimeout": 120
+  }
+}

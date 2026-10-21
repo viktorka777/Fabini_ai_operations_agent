@@ -1,0 +1,12 @@
+{
+  "http_status": 422,
+  "result": {
+    "valid": false,
+    "expected_order_id": null,
+    "request": "",
+    "run_id": "1942",
+    "status": "invalid_request",
+    "http_status": 422,
+    "message": "request musí být neprázdný text do 2000 znaků s jedním číslem objednávky (6–12 číslic)"
+  }
+}

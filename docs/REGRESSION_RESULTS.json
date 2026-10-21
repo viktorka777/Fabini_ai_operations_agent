@@ -1,0 +1,307 @@
+{
+  "mode": "offline_exported_code_and_graph_with_simulated_redis",
+  "limitations": [
+    "No live n8n, Redis connection, or LLM calls are executed by this test."
+  ],
+  "exports": {
+    "01_mock.json": "a309adab7dff310b9e74131add49f40734f632df3ee4e91d88704852a23504a9",
+    "02_agent.json": "9fb59ecf72c5d50b9dda3cf6f1ea26e8d5b6924f94291dc6647a801870fcf762",
+    "03_approval.json": "0d39222e3fd52851df3667f2288ad5faf670d5ff3831ff627ba711c8409888b6"
+  },
+  "passed": 73,
+  "total": 73,
+  "cases": [
+    {
+      "name": "report confirms the actual retry_sync proposal",
+      "passed": true
+    },
+    {
+      "name": "report confirms the actual create_ticket proposal",
+      "passed": true
+    },
+    {
+      "name": "payment diagnosis without a proposal completes without a mutation",
+      "passed": true
+    },
+    {
+      "name": "invalid LLM JSON fails with diagnostics",
+      "passed": true
+    },
+    {
+      "name": "pending retry cannot be reported as none",
+      "passed": true
+    },
+    {
+      "name": "pending retry cannot be reported as create_ticket",
+      "passed": true
+    },
+    {
+      "name": "retry_sync recommendation requires a stored proposal",
+      "passed": true
+    },
+    {
+      "name": "create_ticket recommendation requires a stored proposal",
+      "passed": true
+    },
+    {
+      "name": "failed proposal tool cannot report completed or approval required",
+      "passed": true
+    },
+    {
+      "name": "report rejects foreign proposal action",
+      "passed": true
+    },
+    {
+      "name": "report rejects foreign proposal ID",
+      "passed": true
+    },
+    {
+      "name": "report rejects foreign proposal order",
+      "passed": true
+    },
+    {
+      "name": "report rejects expired proposal",
+      "passed": true
+    },
+    {
+      "name": "report rejects multiple stored proposals",
+      "passed": true
+    },
+    {
+      "name": "report rejects null JSON output",
+      "passed": true
+    },
+    {
+      "name": "report rejects array JSON output",
+      "passed": true
+    },
+    {
+      "name": "report rejects an empty summary",
+      "passed": true
+    },
+    {
+      "name": "report rejects missing expiry",
+      "passed": true
+    },
+    {
+      "name": "report rejects non-numeric expiry",
+      "passed": true
+    },
+    {
+      "name": "report rejects already executed action",
+      "passed": true
+    },
+    {
+      "name": "report rejects missing execution state",
+      "passed": true
+    },
+    {
+      "name": "report rejects empty ticket arguments",
+      "passed": true
+    },
+    {
+      "name": "report rejects oversized ticket arguments",
+      "passed": true
+    },
+    {
+      "name": "approval-required response without a proposal cannot report completion",
+      "passed": true
+    },
+    {
+      "name": "unknown order remains a controlled failure",
+      "passed": true
+    },
+    {
+      "name": "WMS outage can still prepare a truthful incident proposal",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked for successful logs",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked for success after an older failure",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked for empty logs",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked for missing log entries",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked for unknown log status",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked for failure without an error code",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked for failure with an empty error code",
+      "passed": true
+    },
+    {
+      "name": "a latest failure permits retry despite an older success",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked after success followed by a new failure",
+      "passed": true
+    },
+    {
+      "name": "retry proposal is blocked after failure followed by success",
+      "passed": true
+    },
+    {
+      "name": "sync failure is checked again immediately before the effect",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects error-only response",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects input fields with an error",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects count with an error",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects count with a null error field",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects wrong Redis key",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects string count",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects boolean count",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects zero count",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects negative count",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects fractional count",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock rejects ambiguous counts",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock accepts only a first numeric count under its exact key",
+      "passed": true
+    },
+    {
+      "name": "Check approval lock blocks an already incremented count",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects error-only response",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects input fields with an error",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects count with an error",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects count with a null error field",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects wrong Redis key",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects string count",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects boolean count",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects zero count",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects negative count",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects fractional count",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown rejects ambiguous counts",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown accepts only a first numeric count under its exact key",
+      "passed": true
+    },
+    {
+      "name": "Check cooldown blocks an already incremented count",
+      "passed": true
+    },
+    {
+      "name": "approval graph executes and verifies a valid retry exactly once",
+      "passed": true
+    },
+    {
+      "name": "approval graph persists denial and refuses a later approve",
+      "passed": true
+    },
+    {
+      "name": "approval graph cooldown prevents a second ticket from another proposal",
+      "passed": true
+    },
+    {
+      "name": "approval graph blocks expired proposal before claiming or executing",
+      "passed": true
+    },
+    {
+      "name": "approval graph blocks changed order version before claiming or executing",
+      "passed": true
+    },
+    {
+      "name": "approval graph blocks sync logs changed after diagnosis before claiming or executing",
+      "passed": true
+    },
+    {
+      "name": "approval graph rejects invalid decision",
+      "passed": true
+    },
+    {
+      "name": "approval graph rejects unknown proposal",
+      "passed": true
+    },
+    {
+      "name": "approval graph fails closed when Claim approval returns input plus an error",
+      "passed": true
+    },
+    {
+      "name": "approval graph fails closed when Action cooldown returns input plus an error",
+      "passed": true
+    }
+  ]
+}

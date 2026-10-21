@@ -1,0 +1,13 @@
+{
+  "http_status": 409,
+  "result": {
+    "valid": false,
+    "proposal_id": "VK-1930-retry_sync",
+    "decision": "approve",
+    "http_status": 409,
+    "status": "blocked",
+    "message": "",
+    "error": "proposal_already_consumed",
+    "state": "completed"
+  }
+}

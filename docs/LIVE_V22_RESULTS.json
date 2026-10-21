@@ -1,0 +1,118 @@
+{
+  "verze": "v2.2 final",
+  "datum_živého_ověření": "2026-10-15",
+  "instance": {
+    "n8n": "2.21.7",
+    "executionMode": "regular",
+    "database": "sqlite",
+    "redis": "reálný Redis (credential 'Redis (FABINI idempotence)'); port 6379 není vystaven mimo hostitele"
+  },
+  "workflow": {
+    "00_reset": "dsRn7J0d7D84pWPV",
+    "01_mock": "gcFKWoD69ktF38jH",
+    "02_agent": "V7qX9nTuqG5kP6cy",
+    "03_approval": "4Pf6AKjZFH8yPnXJ"
+  },
+  "nasazení": {
+    "metoda": "nahrazeny pouze jsCode uzlů: 01 Mock state and guarded tools <- mock_api.js, 02 Grounded report <- finalize.js, 03 Check approval lock <- redis_claim_guard.js, 03 Check cooldown <- redis_cooldown_guard.js",
+    "poznámka": "veřejné API odmítlo PUT workflow 03 (request/body/settings must NOT have additional properties), proto použit interní UI REST PATCH s versionId",
+    "shoda_kódu": "10/10 Code nodes shodných s exports/*.json (byte-exact), 0 rozporů"
+  },
+  "kontroly": [
+    {
+      "kontrola": "reset vlastních demo dat (interní klíč)",
+      "http": 200,
+      "vysledek": "reset"
+    },
+    {
+      "kontrola": "požadavek bez hlavičky",
+      "http": 403,
+      "vysledek": "Authorization data is wrong!"
+    },
+    {
+      "kontrola": "prázdný požadavek",
+      "http": 422,
+      "vysledek": "invalid_request"
+    },
+    {
+      "kontrola": "diagnostika 100245 (reálné LLM)",
+      "http": 200,
+      "vysledek": "approval_required, root_cause_code=sync_failure, proposal VK-3316-retry_sync",
+      "sekundy": 11.6
+    },
+    {
+      "kontrola": "approve VK-3316-retry_sync",
+      "http": 200,
+      "vysledek": "completed, verification.verified=true, action_result.status=synchronized, shipped=false"
+    },
+    {
+      "kontrola": "opakované approve stejného návrhu",
+      "http": 409,
+      "vysledek": "proposal_already_consumed (state=completed)"
+    },
+    {
+      "kontrola": "diagnostika 100247 → deny VK-3327-create_ticket",
+      "http": 200,
+      "vysledek": "denied, actions_performed=[]"
+    },
+    {
+      "kontrola": "approve po deny",
+      "http": 409,
+      "vysledek": "proposal_already_consumed (state=denied)"
+    },
+    {
+      "kontrola": "dva návrhy na 100248, souběžné approve",
+      "http": "200 a 429",
+      "vysledek": "jeden vykonán a ověřen, druhý zablokován action_limit_reached podle čítače Redis"
+    }
+  ],
+  "redis_dukazy": [
+    {
+      "execution": 3322,
+      "cas_utc": "2026-10-15T18:14:24Z",
+      "node": "Claim approval",
+      "odpoved": {
+        "fabini:vk:claim:VK-3316-retry_sync": 1
+      },
+      "guard": "lock_ok=true, error=null"
+    },
+    {
+      "execution": 3322,
+      "cas_utc": "2026-10-15T18:14:24Z",
+      "node": "Action cooldown",
+      "odpoved": {
+        "fabini:vk:cooldown:100245:retry_sync": 1
+      },
+      "guard": "window_ok=true, lock_ok=true"
+    },
+    {
+      "execution": 3333,
+      "cas_utc": "2026-10-15T18:14:40Z",
+      "node": "Claim approval",
+      "odpoved": {
+        "fabini:vk:claim:VK-3327-create_ticket": 1
+      },
+      "guard": "lock_ok=true"
+    },
+    {
+      "execution": 3348,
+      "cas_utc": "2026-10-15T18:15:53Z",
+      "node": "Action cooldown",
+      "odpoved": {
+        "fabini:vk:cooldown:100248:create_ticket": 1
+      },
+      "guard": "locked, akce vykonána"
+    },
+    {
+      "execution": 3349,
+      "cas_utc": "2026-10-15T18:15:53Z",
+      "node": "Action cooldown",
+      "odpoved": {
+        "fabini:vk:cooldown:100248:create_ticket": 2
+      },
+      "guard": "429 action_limit_reached"
+    }
+  ],
+  "cleanup": "po testech proveden reset demo stavu (00 Admin demo reset, HTTP 200)",
+  "nezahrnuto": "výpadek Redis a vypršení TTL nebyly na živém systému simulovány (ověřeno pouze offline sadou)"
+}

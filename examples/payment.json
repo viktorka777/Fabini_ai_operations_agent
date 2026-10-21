@@ -1,0 +1,55 @@
+{
+  "http_status": 200,
+  "result": {
+    "status": "completed",
+    "run_id": "1936",
+    "request": "Zjisti, proč objednávka 100246 nebyla expedována.",
+    "order_id": "100246",
+    "root_cause_code": "payment_not_completed",
+    "summary": "Objednávka 100246 nebyla expedována, protože platba za ni je stále nevyřízená.",
+    "recommended_action": "none",
+    "next_steps": [
+      "Doporučte zákazníkovi, aby zkontroloval stav platby a dokončil ji."
+    ],
+    "approval_required": false,
+    "pending_action": null,
+    "approval_endpoint": null,
+    "approval_example": null,
+    "actions_performed": [],
+    "steps": [
+      {
+        "tool": "get_order",
+        "arguments": {
+          "order_id": "100246"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100246",
+          "status": "pending_payment",
+          "total_czk": 1290,
+          "items": [
+            "Testovací pánev"
+          ]
+        },
+        "decision": "Invoking \"get_order\" with {\"order_id\":\"100246\"}\n"
+      },
+      {
+        "tool": "get_payment",
+        "arguments": {
+          "order_id": "100246"
+        },
+        "ok": true,
+        "result": {
+          "order_id": "100246",
+          "status": "pending"
+        },
+        "decision": "Invoking \"get_payment\" with {\"order_id\":\"100246\"}\n"
+      }
+    ],
+    "tool_calls": 2,
+    "tool_errors": [],
+    "schema_errors": [],
+    "note": "Diagnostika nic nezměnila. Návrh akce není její provedení.",
+    "http_status": 200
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "http_status": 200,
+  "result": {
+    "status": "completed",
+    "proposal_id": "VK-1930-retry_sync",
+    "order_id": "100245",
+    "action": "retry_sync",
+    "action_result": {
+      "status": "synchronized",
+      "idempotency_key": "100245",
+      "shipped": false
+    },
+    "verification": {
+      "tool": "get_fulfillment",
+      "verified": true,
+      "result": {
+        "order_id": "100245",
+        "status": "ready_to_ship",
+        "shipped": false,
+        "blocked_reason": null
+      }
+    },
+    "actions_performed": [
+      {
+        "tool": "retry_sync",
+        "ok": true
+      }
+    ],
+    "message": "Synchronizace ověřena. Objednávka je připravena k expedici, nikoli již odeslána.",
+    "http_status": 200
+  }
+}
